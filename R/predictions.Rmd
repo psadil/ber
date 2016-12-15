@@ -1,0 +1,19 @@
+---
+title: "Predictions"
+output: html_notebook
+---
+
+This notebook describes the predicted results for a Boundary Extension project with objects and scenes
+
+```{r prep}
+library(tidyverse)
+
+```
+
+Next, prepare the data
+```{r data}
+
+
+
+```
+
