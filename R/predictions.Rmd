@@ -9,22 +9,20 @@ This notebook describes the predicted results for a Boundary Extension project w
 library(tidyverse)
 library(msm)
 library(Hmisc)
-library(svglite)
-library(extrafont)
 ```
 
 Next, prepare the data
 ```{r data}
 
 
-sim_objects <- function(nS=2, nI=100, nLevels=10, std=1){
+sim_objects <- function(nS=2, nI=100, nLevels=2, std=1){
   
   dp <- seq(from=0, to=5, length.out = nLevels)
   
   d <- tibble::tibble(subject = rep(1:nS, each=nI)) %>%
     dplyr::mutate(item = rep(1:nI, times=nS)) %>%
-    dplyr::mutate(condition = rep(seq(from=0,to=.9, by=.1), each=nI/nLevels, times=nS)) %>%
-    dplyr::mutate(condition = factor(condition)) %>%
+    dplyr::mutate(condition = rep(c('Less','More'), each=nI/nLevels, times=nS)) %>% # refers to how items were studied
+    dplyr::mutate(condition = factor(condition, levels=c('Less','More'))) %>% # as compared to studied with same occlusion
     dplyr::mutate(subject = factor(subject)) %>%
     dplyr::mutate(item = factor(item)) %>%
     dplyr::mutate(dp = dp[condition]) %>%
@@ -41,7 +39,7 @@ sim_scenes <- function(nS=2, nI=40, nLevels=2, std=1){
   d <- tibble::tibble(subject = rep(1:nS, each=nI)) %>%
     dplyr::mutate(item = rep(1:nI, times=nS)) %>%
     dplyr::mutate(condition = rep(c('Close','Wide'), each=nI/nLevels, times=nS)) %>% # refers to how items were studied
-    dplyr::mutate(condition = factor(condition)) %>%
+    dplyr::mutate(condition = factor(condition, levels = c('Wide','Close'))) %>%
     dplyr::mutate(subject = factor(subject)) %>%
     dplyr::mutate(item = factor(item)) %>%
     dplyr::mutate(dp = dp[condition]) %>%
