@@ -10,26 +10,41 @@ library(tidyverse)
 library(msm)
 library(Hmisc)
 library(svglite)
+library(extrafont)
 ```
 
 Next, prepare the data
 ```{r data}
 
 
-sim_data <- function(nS=2, nI=100, nLevels=10, nTypes=2, std=1){
+sim_objects <- function(nS=2, nI=100, nLevels=10, std=1){
   
   dp <- seq(from=0, to=5, length.out = nLevels)
   
-  d <- tibble::tibble(subject = rep(1:nS, each=nI, times=nTypes)) %>%
-    dplyr::mutate(item = rep(1:nI, times=nS*nTypes)) %>%
-    dplyr::mutate(type = rep(1:nTypes, each=nS*nI)) %>% # 1 => object, 2 => scene
-    dplyr::mutate(occluded = rep(seq(from=0,to=.9, by=.1), each=nI/nLevels, times=nS*nTypes)) %>%
-    dplyr::mutate(occluded = factor(occluded)) %>%
+  d <- tibble::tibble(subject = rep(1:nS, each=nI)) %>%
+    dplyr::mutate(item = rep(1:nI, times=nS)) %>%
+    dplyr::mutate(condition = rep(seq(from=0,to=.9, by=.1), each=nI/nLevels, times=nS)) %>%
+    dplyr::mutate(condition = factor(condition)) %>%
     dplyr::mutate(subject = factor(subject)) %>%
     dplyr::mutate(item = factor(item)) %>%
-    dplyr::mutate(type = plyr::mapvalues(type, from=1:2, to=c('Object','Scene'))) %>%
-    dplyr::mutate(type = factor(type)) %>%
-    dplyr::mutate(dp = dp[occluded]) %>%
+    dplyr::mutate(dp = dp[condition]) %>%
+    dplyr::mutate(dp = dp + rnorm(n(), 0, std))
+  
+  return(d)
+}
+
+
+sim_scenes <- function(nS=2, nI=40, nLevels=2, std=1){
+  
+  dp <- seq(from=0, to=5, length.out = nLevels)
+  
+  d <- tibble::tibble(subject = rep(1:nS, each=nI)) %>%
+    dplyr::mutate(item = rep(1:nI, times=nS)) %>%
+    dplyr::mutate(condition = rep(c('Close','Wide'), each=nI/nLevels, times=nS)) %>% # refers to how items were studied
+    dplyr::mutate(condition = factor(condition)) %>%
+    dplyr::mutate(subject = factor(subject)) %>%
+    dplyr::mutate(item = factor(item)) %>%
+    dplyr::mutate(dp = dp[condition]) %>%
     dplyr::mutate(dp = dp + rnorm(n(), 0, std))
   
   return(d)
@@ -40,26 +55,44 @@ sim_data <- function(nS=2, nI=100, nLevels=10, nTypes=2, std=1){
 
 ```{r plot}
 
-sim_data(std=.5) %>%
-  ggplot(mapping = aes(x=occluded, y=dp)) +
-  facet_grid(.~type) +
+sim_scenes(std=1) %>%
+  ggplot(mapping = aes(x=condition, y=dp)) +
   geom_point() +
-  xlab("Proportion Occluded") +
+  xlab("Studied framing") +
   ylab('d`') +
+  ggtitle('Scenes') +
   theme(
-    axis.text.y = element_blank()
+    text = element_text(size=25)
+    , axis.text.y = element_blank()
     , axis.ticks = element_blank()
     , panel.background = element_blank()
     , plot.background = element_blank()
     , axis.line = element_line()
+    , plot.margin=unit(c(0,0,.25,0),"cm")
   ) +
-  ggsave('out.eps')
+  ggsave('Scenes.eps')
+
 
 ```
 
-Instead, perhaps it makes sense to talk about scenes as they are generally discussed, a binary of close-up and wide-angle. Objects will always be shown 10% more occluded (baseline of 0-0, rather than 10%-0%).
-```{r, data2}
+```{r, dataObjects}
 
+sim_objects(std=1) %>%
+  ggplot(mapping = aes(x=condition, y=dp)) +
+  geom_point() +
+  xlab("Proportion Occluded") +
+  ylab('d`') +
+  ggtitle('Objects') +
+  theme(
+    text = element_text(size=25)
+    , axis.text.y = element_blank()
+    , axis.ticks = element_blank()
+    , panel.background = element_blank()
+    , plot.background = element_blank()
+    , axis.line = element_line()
+    , plot.margin=unit(c(0,0,.25,0),"cm")
+  ) +
+  ggsave('Objects.eps')
 
 
 ```
